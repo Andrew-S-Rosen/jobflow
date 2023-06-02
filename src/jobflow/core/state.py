@@ -8,6 +8,7 @@ This module defines the ``CURRENT_JOB`` object which has two attributes:
   the job config.
 """
 
+
 from __future__ import annotations
 
 import typing
@@ -15,8 +16,6 @@ import typing
 from monty.design_patterns import singleton
 
 if typing.TYPE_CHECKING:
-    pass
-
     import jobflow
 
 __all__ = ["CURRENT_JOB"]

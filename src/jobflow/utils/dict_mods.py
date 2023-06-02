@@ -54,7 +54,7 @@ class DictMods:
         self.supported_actions = {}
         for i in dir(self):
             if (not re.match(r"__\w+__", i)) and callable(getattr(self, i)):
-                self.supported_actions["_" + i] = getattr(self, i)
+                self.supported_actions[f"_{i}"] = getattr(self, i)
 
     @staticmethod
     def set(input_dict, settings):

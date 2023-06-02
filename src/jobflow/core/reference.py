@@ -277,10 +277,8 @@ class OutputReference(MSONable):
                 self.uuid == other.uuid
                 and len(self.attributes) == len(other.attributes)
                 and all(
-                    [
-                        a[0] == b[0] and a[1] == b[1]
-                        for a, b in zip(self.attributes, other.attributes)
-                    ]
+                    a[0] == b[0] and a[1] == b[1]
+                    for a, b in zip(self.attributes, other.attributes)
                 )
             )
         return False
@@ -296,7 +294,7 @@ class OutputReference(MSONable):
         """Serialize the reference as a dict."""
         schema = self.output_schema
         schema_dict = MontyEncoder().default(schema) if schema is not None else None
-        data = {
+        return {
             "@module": self.__class__.__module__,
             "@class": self.__class__.__name__,
             "@version": None,
@@ -304,7 +302,6 @@ class OutputReference(MSONable):
             "attributes": self.attributes,
             "output_schema": schema_dict,
         }
-        return data
 
 
 def resolve_references(
@@ -507,9 +504,6 @@ def validate_schema_access(
     if item not in schema_dict["properties"]:
         raise AttributeError(f"{schema.__name__} does not have attribute '{item}'.")
 
-    subschema = None
     item_type = schema.__fields__[item].outer_type_
-    if lenient_issubclass(item_type, BaseModel):
-        subschema = item_type
-
+    subschema = item_type if lenient_issubclass(item_type, BaseModel) else None
     return True, subschema

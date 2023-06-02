@@ -139,7 +139,7 @@ class JobflowSettings(BaseSettings):
 
         new_values = {}
         if Path(config_file_path).exists():
-            new_values.update(loadfn(config_file_path))
+            new_values |= loadfn(config_file_path)
 
         store = new_values.get("JOB_STORE")
         if isinstance(store, str):
