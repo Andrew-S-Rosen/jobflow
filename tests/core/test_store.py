@@ -320,7 +320,7 @@ def test_remove_docs(memory_jobstore, memory_data_jobstore):
     memory_jobstore.update(d1)
     memory_jobstore.update(d2)
     memory_jobstore.remove_docs({"a": 1})
-    assert len(list(memory_jobstore.query({"a": 1}))) == 0
+    assert not list(memory_jobstore.query({"a": 1}))
     assert len(list(memory_jobstore.query({"a": 4}))) == 1
 
     d1 = {"a": 1, "b": 2, "c": 3, "index": 1, "uuid": 1}
@@ -330,10 +330,10 @@ def test_remove_docs(memory_jobstore, memory_data_jobstore):
     memory_data_jobstore.remove_docs({"a": 1})
 
     data_store = memory_data_jobstore.additional_stores["data"]
-    assert len(list(memory_data_jobstore.query({"a": 1}))) == 0
+    assert not list(memory_data_jobstore.query({"a": 1}))
     assert len(list(memory_data_jobstore.query({"a": 4}))) == 1
 
-    assert len(list(data_store.query({"job_uuid": 1}))) == 0
+    assert not list(data_store.query({"job_uuid": 1}))
     assert len(list(data_store.query({"job_uuid": 2}))) == 1
 
 

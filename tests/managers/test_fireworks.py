@@ -114,7 +114,7 @@ def test_simple_flow(lpad, mongo_jobstore, fw_dir, simple_flow, capsys):
     fw_id = list(fw_ids.values())[0]
     wf = lpad.get_wf_by_fw_id(fw_id)
 
-    assert all([s == "COMPLETED" for s in wf.fw_states.values()])
+    assert all(s == "COMPLETED" for s in wf.fw_states.values())
 
     # check store has the activity output
     result = mongo_jobstore.query_one({"uuid": uuid})
@@ -145,7 +145,7 @@ def test_simple_flow_no_store(lpad, fw_dir, simple_flow, capsys):
     fw_id = list(fw_ids.values())[0]
     wf = lpad.get_wf_by_fw_id(fw_id)
 
-    assert all([s == "COMPLETED" for s in wf.fw_states.values()])
+    assert all(s == "COMPLETED" for s in wf.fw_states.values())
 
     # check store has the activity output
     result = SETTINGS.JOB_STORE.query_one({"uuid": uuid})
@@ -178,7 +178,7 @@ def test_simple_flow_metadata(
     fw_id = list(fw_ids.values())[0]
     wf = lpad.get_wf_by_fw_id(fw_id)
 
-    assert all([s == "COMPLETED" for s in wf.fw_states.values()])
+    assert all(s == "COMPLETED" for s in wf.fw_states.values())
     assert wf.fws[0].spec["tags"] == ["my_flow"]
 
     # check store has the activity output
@@ -261,7 +261,7 @@ def test_connected_flow(lpad, mongo_jobstore, fw_dir, connected_flow, capsys):
     fw_id = list(fw_ids.values())[0]
     wf = lpad.get_wf_by_fw_id(fw_id)
 
-    assert all([s == "COMPLETED" for s in wf.fw_states.values()])
+    assert all(s == "COMPLETED" for s in wf.fw_states.values())
 
     # check store has the activity output
     result1 = mongo_jobstore.query_one({"uuid": uuid1})
@@ -292,7 +292,7 @@ def test_nested_flow(lpad, mongo_jobstore, fw_dir, nested_flow, capsys):
     fw_id = list(fw_ids.values())[0]
     wf = lpad.get_wf_by_fw_id(fw_id)
 
-    assert all([s == "COMPLETED" for s in wf.fw_states.values()])
+    assert all(s == "COMPLETED" for s in wf.fw_states.values())
 
     # check store has the activity output
     result1 = mongo_jobstore.query_one({"uuid": uuid1})
@@ -326,7 +326,7 @@ def test_addition_flow(lpad, mongo_jobstore, fw_dir, addition_flow, capsys):
 
     uuids = [fw.tasks[0]["job"].uuid for fw in wf.fws]
     uuid2 = [u for u in uuids if u != uuid1][0]
-    assert all([s == "COMPLETED" for s in wf.fw_states.values()])
+    assert all(s == "COMPLETED" for s in wf.fw_states.values())
 
     # check store has the activity output
     result1 = mongo_jobstore.query_one({"uuid": uuid1})
@@ -356,8 +356,8 @@ def test_detour_flow(lpad, mongo_jobstore, fw_dir, detour_flow, capsys):
     wf = lpad.get_wf_by_fw_id(fw_id)
 
     uuids = [fw.tasks[0]["job"].uuid for fw in wf.fws]
-    uuid2 = [u for u in uuids if u != uuid1 and u != uuid3][0]
-    assert all([s == "COMPLETED" for s in wf.fw_states.values()])
+    uuid2 = [u for u in uuids if u not in [uuid1, uuid3]][0]
+    assert all(s == "COMPLETED" for s in wf.fw_states.values())
 
     # check store has the activity output
     result1 = mongo_jobstore.query_one({"uuid": uuid1})
@@ -391,7 +391,7 @@ def test_replace_flow(lpad, mongo_jobstore, fw_dir, replace_flow, capsys):
     fw_id = list(fw_ids.values())[0]
     wf = lpad.get_wf_by_fw_id(fw_id)
 
-    assert all([s == "COMPLETED" for s in wf.fw_states.values()])
+    assert all(s == "COMPLETED" for s in wf.fw_states.values())
 
     # check store has the activity output
     result1 = mongo_jobstore.query_one({"uuid": uuid1, "index": 1})
@@ -565,12 +565,10 @@ def test_detour_stop_flow(lpad, mongo_jobstore, fw_dir, detour_stop_flow, capsys
     wf = lpad.get_wf_by_fw_id(fw_id)
 
     uuids = [fw.tasks[0]["job"].uuid for fw in wf.fws]
-    uuid2 = [u for u in uuids if u != uuid1 and u != uuid3][0]
+    uuid2 = [u for u in uuids if u not in [uuid1, uuid3]][0]
 
     # Sort by firework id explicitly instead of assuming they are sorted
-    states_dict = {
-        key: val for key, val in zip(list(wf.id_fw.keys()), list(wf.fw_states.values()))
-    }
+    states_dict = dict(zip(list(wf.id_fw.keys()), list(wf.fw_states.values())))
     sorted_states_dict = dict(sorted(states_dict.items()))
     assert list(sorted_states_dict.values()) == ["DEFUSED", "COMPLETED", "COMPLETED"]
 
@@ -606,9 +604,9 @@ def test_replace_and_detour_flow(
     wf = lpad.get_wf_by_fw_id(fw_id)
 
     uuids = [fw.tasks[0]["job"].uuid for fw in wf.fws]
-    uuid2 = [u for u in uuids if u != uuid1 and u != uuid3][0]
+    uuid2 = [u for u in uuids if u not in [uuid1, uuid3]][0]
 
-    assert all([s == "COMPLETED" for s in wf.fw_states.values()])
+    assert all(s == "COMPLETED" for s in wf.fw_states.values())
 
     # check store has the activity output
     result1 = mongo_jobstore.query_one({"uuid": uuid1, "index": 1})

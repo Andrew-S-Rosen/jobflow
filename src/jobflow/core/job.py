@@ -181,7 +181,7 @@ def job(method: Callable | None = None, **job_kwargs):
         def get_job(*args, **kwargs) -> Job:
 
             f = func
-            if len(args) > 0:
+            if args:
                 # see if the first argument has a function with the same name as
                 # this function
                 met = getattr(args[0], func.__name__, None)
@@ -210,12 +210,7 @@ def job(method: Callable | None = None, **job_kwargs):
         return get_job
 
     # See if we're being called as @job or @job().
-    if method is None:
-        # We're called with parens.
-        return decorator
-
-    # We're called as @job without parens.
-    return decorator(method)
+    return decorator if method is None else decorator(method)
 
 
 class Job(MSONable):
@@ -428,9 +423,7 @@ class Job(MSONable):
         from jobflow import Maker
 
         bound = getattr(self.function, "__self__", None)
-        if isinstance(bound, Maker):
-            return bound
-        return None
+        return bound if isinstance(bound, Maker) else None
 
     @property
     def graph(self) -> DiGraph:
@@ -1099,7 +1092,7 @@ class Job(MSONable):
         if not isinstance(hosts_uuids, (list, tuple)):
             hosts_uuids = [hosts_uuids]
         if prepend:
-            self.hosts[0:0] = hosts_uuids
+            self.hosts[:0] = hosts_uuids
         else:
             self.hosts.extend(hosts_uuids)
 

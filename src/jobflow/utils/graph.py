@@ -1,5 +1,6 @@
 """Tools for constructing Job and Flow graphs."""
 
+
 from __future__ import annotations
 
 import warnings
@@ -15,8 +16,6 @@ except ImportError:
 import typing
 
 if typing.TYPE_CHECKING:
-    pass
-
     import jobflow
 
 __all__ = ["itergraph", "draw_graph", "to_pydot", "to_mermaid"]

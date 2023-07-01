@@ -53,10 +53,7 @@ def get_maker_flow(return_makers=False):
     div_job = div_maker.make(add_job.output)
     flow = Flow([add_job, div_job])
 
-    if return_makers:
-        return flow, (AddMaker, DivMaker)
-    else:
-        return flow
+    return (flow, (AddMaker, DivMaker)) if return_makers else flow
 
 
 def test_flow_of_jobs_init():

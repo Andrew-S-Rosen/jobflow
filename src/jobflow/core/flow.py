@@ -266,8 +266,10 @@ class Flow(MSONable):
                 else:
                     roots = [job_b.uuid]
 
-                for leaf, root in product(leaves, roots):
-                    edges.append((leaf, root, {"properties": ""}))
+                edges.extend(
+                    (leaf, root, {"properties": ""})
+                    for leaf, root in product(leaves, roots)
+                )
             graph.add_edges_from(edges)
         return graph
 
@@ -658,7 +660,7 @@ class Flow(MSONable):
             if not isinstance(hosts_uuids, (list, tuple)):
                 hosts_uuids = [hosts_uuids]
             if prepend:
-                self.hosts[0:0] = hosts_uuids
+                self.hosts[:0] = hosts_uuids
             else:
                 self.hosts.extend(hosts_uuids)
         else:
@@ -764,8 +766,7 @@ def get_flow(
     # ensure that we have all the jobs needed to resolve the reference connections
     job_references = find_and_get_references(flow.jobs)
     job_reference_uuids = {ref.uuid for ref in job_references}
-    missing_jobs = job_reference_uuids.difference(set(flow.job_uuids))
-    if len(missing_jobs) > 0:
+    if missing_jobs := job_reference_uuids.difference(set(flow.job_uuids)):
         raise ValueError(
             "The following jobs were not found in the jobs array and are needed to "
             f"resolve output references:\n{list(missing_jobs)}"

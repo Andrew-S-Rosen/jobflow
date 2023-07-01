@@ -11,7 +11,7 @@ def simple_job():
 
     @job
     def func(message):
-        return message + "_end"
+        return f"{message}_end"
 
     return func
 
@@ -242,7 +242,7 @@ def stored_data_job():
 
     @job
     def stored_data_func(message):
-        return Response(output=message + "_end", stored_data={"a": "message"})
+        return Response(output=f"{message}_end", stored_data={"a": "message"})
 
     return stored_data_func
 

@@ -56,11 +56,7 @@ class JobStore(Store):
         load: load_type = False,
     ):
         self.docs_store = docs_store
-        if additional_stores is None:
-            self.additional_stores = {}
-        else:
-            self.additional_stores = additional_stores
-
+        self.additional_stores = {} if additional_stores is None else additional_stores
         # enforce uuid key
         self.docs_store.key = "uuid"
         for additional_store in self.additional_stores.values():
@@ -212,7 +208,7 @@ class JobStore(Store):
                     )
                     object_map = {o["blob_uuid"]: o["data"] for o in objects}
                     inserts = {tuple(v): object_map[k] for k, v in object_info.items()}
-                    to_insert.update(inserts)
+                    to_insert |= inserts
 
                 update_in_dictionary(doc, to_insert)
 
@@ -249,8 +245,7 @@ class JobStore(Store):
         docs = self.query(
             criteria=criteria, properties=properties, load=load, sort=sort, limit=1
         )
-        d = next(docs, None)
-        return d
+        return next(docs, None)
 
     def update(
         self,
@@ -515,7 +510,7 @@ class JobStore(Store):
                 raise ValueError(f"UUID: {uuid}{istr} has no outputs.")
 
             refs = find_and_get_references(result["output"])
-            if any([ref.uuid == uuid for ref in refs]):
+            if any(ref.uuid == uuid for ref in refs):
                 raise RuntimeError("Reference cycle detected - aborting.")
 
             return find_and_resolve_references(
@@ -531,13 +526,13 @@ class JobStore(Store):
                 )
             )
 
-            if len(results) == 0:
+            if not results:
                 raise ValueError(f"UUID: {uuid} has no outputs.")
 
             results = [r["output"] for r in results]
 
             refs = find_and_get_references(results)
-            if any([ref.uuid == uuid for ref in refs]):
+            if any(ref.uuid == uuid for ref in refs):
                 raise RuntimeError("Reference cycle detected - aborting.")
 
             return find_and_resolve_references(

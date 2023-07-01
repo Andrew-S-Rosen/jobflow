@@ -112,7 +112,7 @@ def job_to_firework(
     spec = {"_add_launchpad_and_fw_id": True}  # this allows the job to know the fw_id
     if job.config.on_missing_references != OnMissing.ERROR:
         spec["_allow_fizzled_parents"] = True
-    spec.update(job.config.manager_config)
+    spec |= job.config.manager_config
     spec.update(job.metadata)  # add metadata to spec
 
     fw = Firework([task], spec=spec, name=job.name, parents=job_parents, **kwargs)
@@ -188,11 +188,10 @@ class JobFiretask(FiretaskBase):
             else:
                 detours = [detour_wf]
 
-        fwa = FWAction(
+        return FWAction(
             stored_data=response.stored_data,
             detours=detours,
             additions=additions,
             defuse_workflow=response.stop_jobflow,
             defuse_children=response.stop_children,
         )
-        return fwa

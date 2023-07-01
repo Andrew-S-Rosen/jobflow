@@ -474,5 +474,4 @@ def test_not_iterable():
         next(ref)
 
     with pytest.raises(TypeError):
-        for _ in ref:
-            pass
+        pass

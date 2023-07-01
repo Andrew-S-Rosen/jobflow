@@ -1,13 +1,12 @@
 """Tools for running jobflow locally."""
 
+
 from __future__ import annotations
 
 import logging
 import typing
 
 if typing.TYPE_CHECKING:
-    pass
-
     import jobflow
 
 __all__ = ["run_locally"]
@@ -79,7 +78,7 @@ def run_locally(
         if stop_jobflow:
             return False
 
-        if len(set(parents).intersection(stopped_parents)) > 0:
+        if set(parents).intersection(stopped_parents):
             # stop children has been called for one of the jobs' parents
             logger.info(
                 f"{job.name} is a child of a job with stop_children=True, skipping..."
@@ -88,7 +87,7 @@ def run_locally(
             return
 
         if (
-            len(set(parents).intersection(errored)) > 0
+            set(parents).intersection(errored)
             and job.config.on_missing_references == OnMissing.ERROR
         ):
             errored.add(job.uuid)

@@ -16,20 +16,20 @@ def test_itergraph():
     # test branched
     graph = DiGraph([("a", "b"), ("b", "c"), ("a", "c"), ("d", "b")])
     result = list(itergraph(graph))
-    assert result == ["a", "d", "b", "c"] or result == ["d", "a", "b", "c"]
+    assert result in [["a", "d", "b", "c"], ["d", "a", "b", "c"]]
 
     # test non-connected
     graph = DiGraph([("a", "b"), ("c", "d")])
     with pytest.warns(UserWarning):
         result = list(itergraph(graph))
-    assert (
-        result == ["a", "b", "c", "d"]
-        or result == ["c", "d", "a", "b"]
-        or result == ["a", "c", "b", "d"]
-        or result == ["a", "c", "d", "b"]
-        or result == ["c", "a", "b", "d"]
-        or result == ["c", "a", "d", "b"]
-    )
+    assert result in [
+        ["a", "b", "c", "d"],
+        ["c", "d", "a", "b"],
+        ["a", "c", "b", "d"],
+        ["a", "c", "d", "b"],
+        ["c", "a", "b", "d"],
+        ["c", "a", "d", "b"],
+    ]
 
     # test non DAG
     graph = DiGraph([("a", "b"), ("b", "a")])
