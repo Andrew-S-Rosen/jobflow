@@ -179,6 +179,9 @@ def job(method: Callable | None = None, **job_kwargs):
 
         @wraps(func)
         def get_job(*args, **kwargs) -> Job:
+            
+            args = tuple([arg.output if isinstance(arg, Job) else arg for arg in args])
+            kwargs = {k:(v.output if isinstance(v, Job) else v) for k,v in kwargs.items()}
 
             f = func
             if len(args) > 0:

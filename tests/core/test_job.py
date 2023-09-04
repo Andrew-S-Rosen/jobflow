@@ -121,6 +121,24 @@ def test_job_run(capsys, memory_jobstore, memory_data_jobstore):
     with pytest.raises(RuntimeError):
         test_job.run(memory_jobstore)
 
+def test_job_nested():
+    from jobflow import Flow, job, run_locally
+
+    @job
+    def add(a, b, c=0):
+        return a + b + c
+    
+    job1 = add(1, 2)
+    job2 = add(job1, 3)
+    flow = Flow([job1, job2])
+    response = run_locally(flow, ensure_success=True)
+    assert response[job2.uuid][1].output == 6
+
+    job1 = add(1, 2)
+    job2 = add(1, 3, c=job1)
+    flow = Flow([job1, job2])
+    response = run_locally(flow, ensure_success=True)
+    assert response[job2.uuid][1].output == 7
 
 def test_replace_response(memory_jobstore):
     from jobflow import Flow, Job, Response
