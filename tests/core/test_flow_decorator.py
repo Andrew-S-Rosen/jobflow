@@ -159,6 +159,26 @@ def test_flow_returns_output_reference():
     assert result[flow1.output.uuid][1].output == 7
 
 
+def test_flow_resolves_job_inputs_to_outputs():
+    """Test that Jobs used as inputs inside a decorated flow resolve to outputs."""
+    from jobflow import flow, job
+    from jobflow.managers.local import run_locally
+
+    @job
+    def combine(a, values):
+        return a + values["nested"][0]
+
+    @flow
+    def my_flow(a, b):
+        sum_job = add(a, b)
+        return combine(a, {"nested": [sum_job]})
+
+    flow1 = my_flow(1, 2)
+    result = run_locally(flow1, ensure_success=True)
+
+    assert result[flow1.output.uuid][1].output == 4
+
+
 def test_flow_returns_list():
     """Test that a flow that returns a list of OutputReferences
     can be created and run."""

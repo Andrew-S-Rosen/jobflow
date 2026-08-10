@@ -28,6 +28,23 @@ if typing.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _replace_job_or_flow_with_output(value):
+    """Replace Jobs and Flows in nested containers with their outputs."""
+    from jobflow.core.flow import Flow
+
+    if isinstance(value, (Job, Flow)):
+        return value.output
+    if isinstance(value, list):
+        return [_replace_job_or_flow_with_output(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_replace_job_or_flow_with_output(item) for item in value)
+    if isinstance(value, dict):
+        return {
+            key: _replace_job_or_flow_with_output(item) for key, item in value.items()
+        }
+    return value
+
+
 @dataclass
 class JobConfig(MSONable):
     """
@@ -212,6 +229,10 @@ def job(
                         # Ah ha. The function is a bound method.
                         f = met
                         args = args[1:]
+
+            if _current_flow_context.get() is not None:
+                args = _replace_job_or_flow_with_output(args)
+                kwargs = _replace_job_or_flow_with_output(kwargs)
 
             return Job(
                 function=f, function_args=args, function_kwargs=kwargs, **job_kwargs
