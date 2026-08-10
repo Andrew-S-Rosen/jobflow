@@ -230,6 +230,38 @@ def test_replace_response(memory_jobstore):
     # currently output schema and metadata ignored for all but the last `store_inputs`
 
 
+def test_replace_response_collects_dynamic_dependencies():
+    """Test replacement jobs include dynamically created dependencies."""
+    from jobflow import Response, job, run_locally
+
+    @job
+    def add_job(a, b):
+        return a + b
+
+    @job
+    def multiply_job(value, factor):
+        return value * factor
+
+    @job
+    def make_dynamic_workflow():
+        add_job(100, 200)
+        first = add_job(1, 2)
+        final = multiply_job(first, 3)
+        return Response(replace=final)
+
+    dynamic_job = make_dynamic_workflow()
+    responses = run_locally(dynamic_job, ensure_success=True)
+
+    outputs = [
+        response.output
+        for index_to_response in responses.values()
+        for response in index_to_response.values()
+        if isinstance(response.output, int)
+    ]
+    assert sorted(outputs) == [3, 9]
+    assert len(responses) == 3
+
+
 def test_job_config(memory_jobstore):
     from jobflow import (
         CURRENT_JOB,
