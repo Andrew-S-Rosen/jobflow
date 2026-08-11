@@ -180,36 +180,47 @@ def test_flow_resolves_minimal_job_input_example():
 
 
 def test_flow_resolves_job_inputs_to_outputs():
-    """Test that Jobs used as inputs inside a decorated flow resolve to outputs."""
+    """Test top-level container Jobs resolve without traversing nested containers."""
     from jobflow import flow, job
-    from jobflow.managers.local import run_locally
 
     @job
-    def combine(a, values):
-        return a + values["nested"][0]
+    def consume(values):
+        return values
 
     @flow
-    def my_flow(a, b):
-        sum_job = add(a, b)
-        return combine(a, {"nested": [sum_job]})
+    def my_flow():
+        source = add(1, 2)
+        list_job = consume([source])
+        tuple_job = consume((source,))
+        dict_job = consume({"source": source})
+        nested_job = consume([[source], [1, 2]])
+        return [
+            list_job.output,
+            tuple_job.output,
+            dict_job.output,
+            nested_job.output,
+        ]
 
-    flow1 = my_flow(1, 2)
-    result = run_locally(flow1, ensure_success=True)
+    flow1 = my_flow()
+    source = flow1.jobs[0]
 
-    assert result[flow1.output.uuid][1].output == 4
+    assert flow1.jobs[1].function_args == ([source.output],)
+    assert flow1.jobs[2].function_args == ((source.output,),)
+    assert flow1.jobs[3].function_args == ({"source": source.output},)
+    assert flow1.jobs[4].function_args == ([[source], [1, 2]],)
 
 
-def test_flow_normalizes_nested_job_outputs():
-    """Test Jobs nested in decorated flow outputs resolve to references."""
+def test_flow_normalizes_top_level_job_outputs():
+    """Test Jobs at the top level of a decorated flow output are normalized."""
     from jobflow import flow
 
     @flow
     def my_flow():
-        return {"nested": (add(1, 2),)}
+        return {"job": add(1, 2)}
 
     flow1 = my_flow()
 
-    assert flow1.output == {"nested": (flow1.jobs[0].output,)}
+    assert flow1.output == {"job": flow1.jobs[0].output}
 
 
 def test_flow_returns_list():

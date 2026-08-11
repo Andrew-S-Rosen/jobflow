@@ -932,16 +932,21 @@ def get_flow(
 
 
 def _normalize_job_or_flow(value):
-    """Replace Jobs and Flows in nested containers with their outputs."""
+    """Replace Jobs and Flows at the top level of a value with their outputs."""
+    def normalize_item(item):
+        if isinstance(item, (jobflow.Job, jobflow.Flow)):
+            return item.output
+        return item
+
     if isinstance(value, (jobflow.Job, jobflow.Flow)):
         return value.output
     if isinstance(value, list):
-        return [_normalize_job_or_flow(item) for item in value]
+        return [normalize_item(item) for item in value]
     if isinstance(value, tuple):
-        return tuple(_normalize_job_or_flow(item) for item in value)
+        return tuple(normalize_item(item) for item in value)
     if isinstance(value, dict):
         return {
-            _normalize_job_or_flow(key): _normalize_job_or_flow(item)
+            normalize_item(key): normalize_item(item)
             for key, item in value.items()
         }
     return value
