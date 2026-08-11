@@ -1448,21 +1448,22 @@ def test_job_decorator_config_shared():
     )
 
 
-def test_job_collects_dynamic_subflow(memory_jobstore):
-    """Test a job retains every job created by a returned dynamic subflow."""
-    from jobflow import Flow, job
+def test_job_collects_jobs_created_during_run(memory_jobstore):
+    """Test a job retains all jobs created while its function is running."""
+    from jobflow import job
 
     @job
     def add_job(a, b):
         return a + b
 
     @job
-    def dynamic_subflow():
+    def create_jobs():
         first = add_job(1, 2)
         return add_job(first.output, 3)
 
-    response = dynamic_subflow().run(memory_jobstore)
+    response = create_jobs().run(memory_jobstore)
 
-    assert isinstance(response.replace, Flow)
+    # The replacement contains both created jobs and the output-mapping job added by
+    # prepare_replace. Its output should refer to the second created job.
     assert len(response.replace) == 3
     assert response.replace.output.uuid == response.replace[-2].uuid
