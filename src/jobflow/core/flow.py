@@ -931,19 +931,9 @@ def get_flow(
     return flow
 
 
-def _normalize_job_or_flow(value, decorated_flow_name=None):
+def _normalize_job_or_flow(value):
     """Replace Jobs and Flows in nested containers with their outputs."""
     if isinstance(value, (jobflow.Job, jobflow.Flow)):
-        if decorated_flow_name is not None:
-            warnings.warn(
-                f"@flow decorated function '{decorated_flow_name}' contains a Flow "
-                "or Job as an output. Usually the output should be the output of "
-                "a Job or another Flow (e.g. job.output). Replacing the output of "
-                "the @flow with the output of the Flow/Job. If this message is "
-                "unexpected then double check the outputs of your @flow decorated "
-                "function.",
-                stacklevel=3,
-            )
         return value.output
     if isinstance(value, list):
         return [_normalize_job_or_flow(item) for item in value]
@@ -989,7 +979,16 @@ class DecoratedFlow(Flow):
         ):
             name = args[0].name
 
-        output = _normalize_job_or_flow(output, decorated_flow_name=name)
+        if isinstance(output, (jobflow.Job, jobflow.Flow)):
+            warnings.warn(
+                f"@flow decorated function '{name}' contains a Flow or Job as an "
+                "output. Usually the output should be the output of a Job or another "
+                "Flow (e.g. job.output). Replacing the output of the @flow with the "
+                "output of the Flow/Job. If this message is unexpected then double "
+                "check the outputs of your @flow decorated function.",
+                stacklevel=2,
+            )
+        output = _normalize_job_or_flow(output)
 
         super().__init__(name=name, jobs=children_list, output=output)
 
