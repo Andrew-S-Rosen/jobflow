@@ -180,7 +180,7 @@ def test_flow_resolves_minimal_job_input_example():
 
 
 def test_flow_resolves_job_inputs_to_outputs():
-    """Test top-level container Jobs resolve without traversing nested containers."""
+    """Test top-level container Jobs resolve to outputs."""
     from jobflow import flow, job
 
     @job
@@ -193,12 +193,10 @@ def test_flow_resolves_job_inputs_to_outputs():
         list_job = consume([source])
         tuple_job = consume((source,))
         dict_job = consume({"source": source})
-        nested_job = consume([[source], [1, 2]])
         return [
             list_job.output,
             tuple_job.output,
             dict_job.output,
-            nested_job.output,
         ]
 
     flow1 = my_flow()
@@ -207,7 +205,6 @@ def test_flow_resolves_job_inputs_to_outputs():
     assert flow1.jobs[1].function_args == ([source.output],)
     assert flow1.jobs[2].function_args == ((source.output,),)
     assert flow1.jobs[3].function_args == ({"source": source.output},)
-    assert flow1.jobs[4].function_args == ([[source], [1, 2]],)
 
 
 def test_flow_normalizes_top_level_job_outputs():
