@@ -1154,7 +1154,7 @@ def test_update_metadata(memory_jobstore):
     test_job = maker.make()
     test_job.update_metadata(
         {"v": 5},
-        callback_filter=lambda job: (job.maker is not None and job.maker.value == 42),
+        callback_filter=lambda job: job.maker is not None and job.maker.value == 42,
     )
     assert test_job.metadata["v"] == 5
 
