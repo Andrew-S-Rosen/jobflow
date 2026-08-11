@@ -635,7 +635,7 @@ class Job(MSONable):
         if bound is not None and not isinstance(bound, types.ModuleType):
             function = types.MethodType(function, bound)
 
-        children = []
+        children: list[Job | Flow] = []
         with flow_build_context(children):
             response = function(*self.function_args, **self.function_kwargs)
 
