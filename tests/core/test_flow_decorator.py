@@ -171,8 +171,7 @@ def test_flow_resolves_minimal_job_input_example():
     @flow
     def workflow(a, b):
         sum_result = add(a, b)
-        mult_result = mult(a, sum_result)
-        return mult_result
+        return mult(a, sum_result)
 
     flow1 = workflow(1, 2)
     result = run_locally(flow1, ensure_success=True)
