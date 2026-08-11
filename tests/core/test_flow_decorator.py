@@ -159,6 +159,27 @@ def test_flow_returns_output_reference():
     assert result[flow1.output.uuid][1].output == 7
 
 
+def test_flow_resolves_minimal_job_input_example():
+    """Test the minimal Job-as-input example from issue #884."""
+    from jobflow import flow, job
+    from jobflow.managers.local import run_locally
+
+    @job
+    def mult(a, b):
+        return a * b
+
+    @flow
+    def workflow(a, b):
+        sum_result = add(a, b)
+        mult_result = mult(a, sum_result)
+        return mult_result
+
+    flow1 = workflow(1, 2)
+    result = run_locally(flow1, ensure_success=True)
+
+    assert result[flow1.output.uuid][1].output == 3
+
+
 def test_flow_resolves_job_inputs_to_outputs():
     """Test that Jobs used as inputs inside a decorated flow resolve to outputs."""
     from jobflow import flow, job
