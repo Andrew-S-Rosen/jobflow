@@ -965,11 +965,11 @@ class DecoratedFlow(Flow):
 
         if isinstance(output, (jobflow.Job, jobflow.Flow)):
             warnings.warn(
-                f"@flow decorated function '{name}' contains a Flow or"
-                f"Job as an output. Usually the output should be the output of"
-                f"a Job or another Flow (e.g. job.output). Replacing the"
-                f"output of the @flow with the output of the Flow/Job."
-                f"If this message is unexpected then double check the outputs"
+                f"@flow decorated function '{name}' contains a Flow or "
+                f"Job as an output. Usually the output should be the output of "
+                f"a Job or another Flow (e.g. job.output). Replacing the "
+                f"output of the @flow with the output of the Flow/Job. "
+                f"If this message is unexpected then double check the outputs "
                 f"of your @flow decorated function.",
                 stacklevel=2,
             )
