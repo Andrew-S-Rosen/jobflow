@@ -83,7 +83,6 @@ def test_job_run(capsys, memory_jobstore, memory_data_jobstore):
     response = test_job.run(memory_jobstore)
     assert capsys.readouterr().out == "I am a job\n"
     assert isinstance(response, Response)
-
     # test run with outputs
     test_job = Job(add, function_args=(1,), function_kwargs={"b": 2})
     response = test_job.run(memory_jobstore)
@@ -1447,3 +1446,23 @@ def test_job_decorator_config_shared():
         f"Expected job2.config.manager_config to be {{'key': 'original'}}, "
         f"but got {job2.config.manager_config!r} — shared instance bug confirmed."
     )
+
+
+def test_job_collects_dynamic_subflow(memory_jobstore):
+    """Test a job retains every job created by a returned dynamic subflow."""
+    from jobflow import Flow, job
+
+    @job
+    def add_job(a, b):
+        return a + b
+
+    @job
+    def dynamic_subflow():
+        first = add_job(1, 2)
+        return add_job(first.output, 3)
+
+    response = dynamic_subflow().run(memory_jobstore)
+
+    assert isinstance(response.replace, Flow)
+    assert len(response.replace) == 3
+    assert response.replace.output.uuid == response.replace[-2].uuid

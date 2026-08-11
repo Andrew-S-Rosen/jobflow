@@ -604,7 +604,12 @@ class Job(MSONable):
         from datetime import datetime
 
         from jobflow import CURRENT_JOB
-        from jobflow.core.flow import get_flow
+        from jobflow.core.flow import (
+            Flow,
+            _normalize_flow_output,
+            flow_build_context,
+            get_flow,
+        )
         from jobflow.core.schemas import JobStoreDocument
 
         index_str = f", {self.index}" if self.index != 1 else ""
@@ -626,7 +631,13 @@ class Job(MSONable):
         if bound is not None and not isinstance(bound, types.ModuleType):
             function = types.MethodType(function, bound)
 
-        response = function(*self.function_args, **self.function_kwargs)
+        children = []
+        with flow_build_context(children):
+            response = function(*self.function_args, **self.function_kwargs)
+
+        children = [child for child in children if child.host is None]
+        if children and not isinstance(response, Response):
+            response = Flow(jobs=children, output=_normalize_flow_output(response))
         response = Response.from_job_returns(
             response, self.output_schema, job_dir=job_dir
         )

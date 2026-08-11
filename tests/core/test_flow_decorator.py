@@ -159,6 +159,19 @@ def test_flow_returns_output_reference():
     assert result[flow1.output.uuid][1].output == 7
 
 
+def test_flow_normalizes_nested_job_outputs():
+    """Test Jobs nested in decorated flow outputs resolve to references."""
+    from jobflow import flow
+
+    @flow
+    def my_flow():
+        return {"nested": (add(1, 2),)}
+
+    flow1 = my_flow()
+
+    assert flow1.output == {"nested": (flow1.jobs[0].output,)}
+
+
 def test_flow_returns_list():
     """Test that a flow that returns a list of OutputReferences
     can be created and run."""
