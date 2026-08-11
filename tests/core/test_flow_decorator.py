@@ -212,6 +212,24 @@ def test_flow_normalizes_nested_job_outputs():
     assert flow1.output == {"nested": (flow1.jobs[0].output,)}
 
 
+def test_flow_does_not_recheck_normalized_output(monkeypatch):
+    """Test normalized decorated-flow outputs are not scanned a second time."""
+    from jobflow import flow
+
+    def fail_if_called(_):
+        raise AssertionError("normalized output was checked again")
+
+    monkeypatch.setattr("jobflow.core.flow.contains_flow_or_job", fail_if_called)
+
+    @flow
+    def my_flow():
+        return {"nested": (add(1, 2),)}
+
+    flow1 = my_flow()
+
+    assert flow1.output == {"nested": (flow1.jobs[0].output,)}
+
+
 def test_flow_returns_list():
     """Test that a flow that returns a list of OutputReferences
     can be created and run."""
