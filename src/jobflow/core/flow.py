@@ -284,11 +284,8 @@ class Flow(MSONable):
             The output of the flow. These should come from the output of one
             or more of the jobs.
         """
-        output_is_normalized = getattr(self, "_output_is_normalized", False)
-        self._output_is_normalized = False
-
         if output is not None:
-            if not output_is_normalized and contains_flow_or_job(output):
+            if contains_flow_or_job(output):
                 warnings.warn(
                     f"Flow '{self.name}' contains a Flow or Job as an output. "
                     f"Usually the Flow output should be the output of a Job or "
@@ -992,9 +989,6 @@ class DecoratedFlow(Flow):
                 stacklevel=2,
             )
         output = _normalize_job_or_flow(output)
-        # Avoid checking the entire output again in Flow.output; normalization has
-        # already replaced every nested Job and Flow.
-        self._output_is_normalized = True
 
         super().__init__(name=name, jobs=children_list, output=output)
 
