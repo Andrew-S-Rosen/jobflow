@@ -216,8 +216,7 @@ def job(
             if _current_flow_context.get() is not None:
                 args = tuple(_normalize_job_or_flow(arg) for arg in args)
                 kwargs = {
-                    key: _normalize_job_or_flow(value)
-                    for key, value in kwargs.items()
+                    key: _normalize_job_or_flow(value) for key, value in kwargs.items()
                 }
 
             return Job(
