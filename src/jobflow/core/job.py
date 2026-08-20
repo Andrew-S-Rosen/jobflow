@@ -11,8 +11,9 @@ from typing import cast, overload
 from monty.json import MSONable, jsanitize
 from typing_extensions import Self
 
-from jobflow.core.flow import _current_flow_context, _normalize_job_or_flow
+from jobflow.core.flow import _current_flow_context
 from jobflow.core.reference import OnMissing, OutputReference
+from jobflow.utils.find import replace_job_or_flow_with_output
 from jobflow.utils.uid import suid
 
 if typing.TYPE_CHECKING:
@@ -214,10 +215,8 @@ def job(
                         args = args[1:]
 
             if _current_flow_context.get() is not None:
-                args = tuple(_normalize_job_or_flow(arg) for arg in args)
-                kwargs = {
-                    key: _normalize_job_or_flow(value) for key, value in kwargs.items()
-                }
+                args = replace_job_or_flow_with_output(args)
+                kwargs = replace_job_or_flow_with_output(kwargs)
 
             return Job(
                 function=f, function_args=args, function_kwargs=kwargs, **job_kwargs
@@ -610,12 +609,7 @@ class Job(MSONable):
         from datetime import datetime
 
         from jobflow import CURRENT_JOB
-        from jobflow.core.flow import (
-            Flow,
-            _normalize_job_or_flow,
-            flow_build_context,
-            get_flow,
-        )
+        from jobflow.core.flow import get_flow
         from jobflow.core.schemas import JobStoreDocument
 
         index_str = f", {self.index}" if self.index != 1 else ""
@@ -637,13 +631,7 @@ class Job(MSONable):
         if bound is not None and not isinstance(bound, types.ModuleType):
             function = types.MethodType(function, bound)
 
-        children: list[Job | Flow] = []
-        with flow_build_context(children):
-            response = function(*self.function_args, **self.function_kwargs)
-
-        children = [child for child in children if child.host is None]
-        if children and not isinstance(response, Response):
-            response = Flow(jobs=children, output=_normalize_job_or_flow(response))
+        response = function(*self.function_args, **self.function_kwargs)
         response = Response.from_job_returns(
             response, self.output_schema, job_dir=job_dir
         )
